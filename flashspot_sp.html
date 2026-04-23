@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flashspot SP</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --acc:#E8420A;
+  --acc-light:#FEE2E2;
+  --live:#22C55E;
+  --bg:#0F0F0F;
+  --bg2:#1A1A1A;
+  --bg3:#242424;
+  --border:#2E2E2E;
+  --text:#F0F0F0;
+  --text2:#999;
+  --text3:#666;
+  --card:#1A1A1A;
+  --radius:12px;
+  --radius-sm:8px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.app{max-width:420px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden;}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.on{display:flex;}
+
+/* ── AUTH ── */
+.auth{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:0;}
+.auth-brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:36px;}
+.auth-icon{width:56px;height:56px;background:var(--acc);border-radius:16px;display:flex;align-items:center;justify-content:center;}
+.auth-icon svg{width:30px;height:30px;fill:white;}
+.auth-title{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-0.8px;}
+.auth-sub{font-size:12px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.auth-box{width:100%;max-width:340px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:24px;}
+.auth-tabs{display:flex;gap:0;margin-bottom:20px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;}
+.atab{flex:1;padding:7px;text-align:center;font-size:13px;border-radius:6px;cursor:pointer;color:var(--text2);border:none;background:transparent;font-family:inherit;}
+.atab.on{background:var(--bg2);color:var(--text);font-weight:600;border:0.5px solid var(--border);}
+.fld{margin-bottom:12px;}
+.fld label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+.fld input{width:100%;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;}
+.fld input:focus{outline:none;border-color:var(--acc);}
+.err{font-size:12px;color:#F87171;margin-bottom:10px;display:none;padding:8px 10px;background:#1F0F0F;border-radius:var(--radius-sm);border:0.5px solid #7F1D1D;}
+.btn{width:100%;padding:11px;background:var(--acc);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;}
+.btn:active{opacity:0.85;}
+.btn-ghost{width:100%;padding:10px;background:transparent;color:var(--text2);border:0.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit;}
+.auth-swap{text-align:center;margin-top:14px;font-size:12px;color:var(--text3);}
+.auth-swap span{color:var(--acc);cursor:pointer;}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid var(--border);flex-shrink:0;background:var(--bg);}
+.hdr-brand{display:flex;align-items:center;gap:8px;}
+.hdr-icon{width:28px;height:28px;background:var(--acc);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.hdr-icon svg{width:16px;height:16px;fill:white;}
+.hdr-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.live-badge{display:flex;align-items:center;gap:5px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--text2);}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--live);animation:blink 1.6s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.av-btn{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;overflow:hidden;flex-shrink:0;}
+.av-btn img{width:100%;height:100%;object-fit:cover;}
+.av-btn.no-img{background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;}
+
+/* ── BOTTOM NAV ── */
+.bnav{display:flex;border-top:0.5px solid var(--border);flex-shrink:0;background:var(--bg2);}
+.bn{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:transparent;color:var(--text3);font-family:inherit;}
+.bn.on{color:var(--acc);}
+.bn-icon{font-size:18px;line-height:1;}
+.bn-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+
+/* ── FEED ── */
+.feed-wrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.cats-bar{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;flex-shrink:0;border-bottom:0.5px solid var(--border);}
+.cats-bar::-webkit-scrollbar{display:none;}
+.cpill{flex-shrink:0;padding:5px 12px;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;font-weight:500;}
+.cpill.on{background:var(--acc);border-color:var(--acc);color:white;}
+.feed-scroll{flex:1;overflow-y:auto;}
+.feed-scroll::-webkit-scrollbar{width:3px;}
+.feed-scroll::-webkit-scrollbar-track{background:transparent;}
+.feed-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.pcard{padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;}
+.pcard:active{background:var(--bg2);}
+.pc-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.pc-av{width:34px;height:34px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.pc-av img{width:100%;height:100%;object-fit:cover;}
+.pc-av.no-img{background:var(--bg3);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.pc-meta{flex:1;}
+.pc-uname{font-size:13px;font-weight:600;color:var(--text);}
+.pc-time{font-size:11px;color:var(--text3);}
+.live-tag{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--live);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.live-tag span{width:5px;height:5px;border-radius:50%;background:var(--live);animation:blink 1.6s infinite;}
+.pc-thumb{width:100%;height:180px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:10px;position:relative;overflow:hidden;}
+.pc-cat-tag{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;}
+.pc-hot{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(232,66,10,0.9);color:white;display:flex;align-items:center;gap:3px;}
+.pc-loc{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.pc-addr{font-size:12px;color:var(--text3);margin-bottom:5px;display:flex;align-items:center;gap:3px;}
+.pc-desc{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.5;}
+.pc-foot{display:flex;align-items:center;gap:14px;}
+.pc-stat{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:3px;}
+.empty-feed{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:40px 20px;text-align:center;}
+.empty-feed .ei{font-size:40px;}
+.empty-feed .et{font-size:14px;color:var(--text2);}
+.empty-feed .es{font-size:12px;color:var(--text3);}
+
+/* ── MAP ── */
+.map-area{flex:1;position:relative;overflow:hidden;background:#141414;}
+.map-svg{width:100%;height:100%;}
+.m-tip{position:absolute;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;pointer-events:none;z-index:10;display:none;}
+.m-tip b{display:block;font-size:13px;color:var(--text);margin-bottom:2px;}
+.m-tip span{color:var(--text3);}
+.map-leg{position:absolute;bottom:14px;left:14px;background:rgba(26,26,26,0.92);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;}
+.lr{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);margin-bottom:4px;}
+.lr:last-child{margin:0;}
+.ld{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* ── POST ── */
+.post-scroll{flex:1;overflow-y:auto;padding:16px;}
+.post-scroll::-webkit-scrollbar{display:none;}
+.post-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.post-sub{font-size:12px;color:var(--text3);margin-bottom:18px;}
+.pf{margin-bottom:14px;}
+.pf label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+.pf input,.pf select,.pf textarea{width:100%;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:inherit;}
+.pf input:focus,.pf select:focus,.pf textarea:focus{outline:none;border-color:var(--acc);}
+.pf select option{background:var(--bg2);}
+.pf textarea{resize:none;height:80px;line-height:1.5;}
+.emoji-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.eg{height:56px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;}
+.eg.sel{border:2px solid var(--acc);background:rgba(232,66,10,0.08);}
+.sug-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.sg{padding:4px 10px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;font-size:11px;color:var(--text3);cursor:pointer;border:none;font-family:inherit;}
+.sg:hover{color:var(--acc);}
+.char-count{font-size:11px;color:var(--text3);text-align:right;margin-top:3px;}
+.char-count.over{color:#F87171;}
+/* Post success */
+.post-ok{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;}
+.post-ok.on{display:flex;}
+.ok-icon{font-size:52px;margin-bottom:16px;}
+.ok-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.ok-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5;}
+
+/* ── PROFILE ── */
+.prof-scroll{flex:1;overflow-y:auto;}
+.prof-scroll::-webkit-scrollbar{display:none;}
+.prof-top{display:flex;flex-direction:column;align-items:center;padding:24px 16px 16px;border-bottom:0.5px solid var(--border);}
+.prof-av-wrap{position:relative;margin-bottom:12px;}
+.prof-av{width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid var(--border);}
+.prof-av img{width:100%;height:100%;object-fit:cover;}
+.prof-av.no-img{background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:var(--text2);}
+.prof-av-edit{position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--bg);}
+.prof-av-edit svg{width:12px;height:12px;fill:white;}
+.prof-name-disp{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.prof-bio-disp{font-size:13px;color:var(--text2);text-align:center;line-height:1.4;margin-bottom:12px;max-width:260px;}
+.prof-edit-btn{padding:7px 20px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;}
+.prof-edit-btn:hover{border-color:var(--acc);color:var(--acc);}
+.prof-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;padding:14px 16px;border-bottom:0.5px solid var(--border);}
+.psr{text-align:center;}
+.psr-v{font-size:20px;font-weight:700;color:var(--text);}
+.psr-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+.prof-sec{padding:14px 16px;}
+.prof-sec-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.mini-card{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.mini-card:last-child{border:none;}
+.mini-em{width:44px;height:44px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.mini-info{flex:1;}
+.mini-loc{font-size:13px;font-weight:600;color:var(--text);}
+.mini-addr{font-size:11px;color:var(--text3);}
+.mini-views{font-size:11px;color:var(--text3);}
+.no-posts-msg{text-align:center;padding:30px 0;font-size:13px;color:var(--text3);}
+.prof-actions{padding:0 16px 16px;}
+.btn-danger{width:100%;padding:10px;background:transparent;border:0.5px solid #7F1D1D;border-radius:var(--radius-sm);color:#F87171;font-size:13px;cursor:pointer;font-family:inherit;}
+
+/* EDIT PROFILE MODAL */
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:flex-end;z-index:50;}
+.modal-bg.hidden{display:none;}
+.modal-sheet{width:100%;background:var(--bg2);border-radius:20px 20px 0 0;border-top:0.5px solid var(--border);padding:20px 20px 32px;}
+.modal-drag{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;}
+.modal-av-row{display:flex;justify-content:center;margin-bottom:16px;}
+.modal-av{width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid var(--border);cursor:pointer;position:relative;}
+.modal-av img{width:100%;height:100%;object-fit:cover;}
+.modal-av.no-img{background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--text2);}
+.modal-av-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:0.5px;}
+.ef{margin-bottom:12px;}
+.ef label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.ef input,.ef textarea{width:100%;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-size:13px;color:var(--text);font-family:inherit;}
+.ef input:focus,.ef textarea:focus{outline:none;border-color:var(--acc);}
+.ef textarea{resize:none;height:56px;}
+.bio-chars{font-size:11px;text-align:right;color:var(--text3);margin-top:3px;}
+.bio-chars.over{color:#F87171;}
+.modal-btns{display:flex;gap:8px;margin-top:14px;}
+.btn-cancel{flex:1;padding:10px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;}
+.btn-save{flex:2;padding:10px;background:var(--acc);border:none;border-radius:var(--radius-sm);color:white;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;}
+
+/* HIDDEN */
+#file-inp{display:none;}
+.new-badge{display:inline-flex;align-items:center;gap:3px;background:var(--acc);color:white;font-size:9px;border-radius:4px;padding:2px 5px;font-weight:700;margin-left:5px;animation:pop 0.3s ease;text-transform:uppercase;}
+@keyframes pop{from{opacity:0;transform:scale(0.6);}to{opacity:1;transform:scale(1);}}
+</style>
+
+<div class="app" id="app">
+
+<!-- AUTH -->
+<div class="screen on" id="s-auth">
+  <div class="auth">
+    <div class="auth-brand">
+      <div class="auth-icon">
+        <svg viewBox="0 0 30 30"><circle cx="15" cy="10" r="6"/><path d="M15 17 C9 17 5 21 5 26 L25 26 C25 21 21 17 15 17z" opacity="0.65"/></svg>
+      </div>
+      <div class="auth-title">Flashspot</div>
+      <div class="auth-sub">São Paulo</div>
+    </div>
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="atab on" id="atab-in" onclick="aswitch('in')">Entrar</button>
+        <button class="atab" id="atab-up" onclick="aswitch('up')">Cadastrar</button>
+      </div>
+      <div class="err" id="a-err"></div>
+
+      <div id="f-in">
+        <div class="fld"><label>E-mail</label><input type="email" id="l-em" placeholder="seu@email.com"/></div>
+        <div class="fld"><label>Senha</label><input type="password" id="l-pw" placeholder="••••••"/></div>
+        <button class="btn" onclick="doLogin()">Entrar</button>
+        <div class="auth-swap">Sem conta? <span onclick="aswitch('up')">Cadastre-se grátis</span></div>
+      </div>
+
+      <div id="f-up" style="display:none;">
+        <div class="fld"><label>Nome</label><input type="text" id="r-nm" placeholder="Seu nome" maxlength="30"/></div>
+        <div class="fld"><label>E-mail</label><input type="email" id="r-em" placeholder="seu@email.com"/></div>
+        <div class="fld"><label>Senha</label><input type="password" id="r-pw" placeholder="mínimo 6 caracteres"/></div>
+        <button class="btn" onclick="doReg()">Criar conta</button>
+        <div class="auth-swap">Já tem conta? <span onclick="aswitch('in')">Entrar</span></div>
+      </div>
+    </div>
+    <div style="margin-top:18px;font-size:11px;color:var(--text3);text-align:center;">Somente São Paulo 🌆<br>Só rolês ao vivo de verdade</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="screen" id="s-main">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-icon"><svg viewBox="0 0 30 30" fill="white"><circle cx="15" cy="10" r="6"/><path d="M15 17 C9 17 5 21 5 26 L25 26 C25 21 21 17 15 17z" opacity="0.65"/></svg></div>
+      <span class="hdr-name">Flashspot</span>
+    </div>
+    <div class="hdr-right">
+      <div class="live-badge"><div class="ldot"></div><span id="live-ct">247 ao vivo</span></div>
+      <button class="av-btn no-img" id="hdr-av" onclick="goTab('perfil')"></button>
+    </div>
+  </div>
+
+  <!-- FEED TAB -->
+  <div id="t-feed" class="screen on" style="flex:1;">
+    <div class="feed-wrap">
+      <div class="cats-bar" id="cats-bar"></div>
+      <div class="feed-scroll" id="feed-scroll"></div>
+    </div>
+  </div>
+
+  <!-- MAPA TAB -->
+  <div id="t-mapa" class="screen" style="flex:1;">
+    <div class="map-area">
+      <svg class="map-svg" viewBox="0 0 420 520" id="mapsvg"></svg>
+      <div class="m-tip" id="m-tip"><b id="tt-n">-</b><span id="tt-i">-</span></div>
+      <div class="map-leg">
+        <div class="lr"><div class="ld" style="background:#E8420A;"></div>Shows / Baladas</div>
+        <div class="lr"><div class="ld" style="background:#3B82F6;"></div>Arte / Cultura</div>
+        <div class="lr"><div class="ld" style="background:#22C55E;"></div>Feiras / Comida</div>
+        <div class="lr"><div class="ld" style="background:#A855F7;"></div>Esportes</div>
+        <div class="lr"><div class="ld" style="background:#F59E0B;"></div>Eventos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST TAB -->
+  <div id="t-post" class="screen" style="flex:1;flex-direction:column;">
+    <div class="post-scroll" id="post-form">
+      <div class="post-title">Postar ao vivo 🔴</div>
+      <div class="post-sub">Só poste se o lugar estiver bombando de verdade</div>
+
+      <div class="pf">
+        <label>Nome do local</label>
+        <input type="text" id="pf-nm" placeholder="Ex: Bar Brahma, Unicid, Largo da Batata…" maxlength="60"/>
+        <div class="sug-row" id="sug-nm"></div>
+      </div>
+      <div class="pf">
+        <label>Rua / Endereço</label>
+        <input type="text" id="pf-ru" placeholder="Ex: R. Itambé, 45 — Higienópolis" maxlength="80"/>
+        <div class="sug-row" id="sug-ru"></div>
+      </div>
+      <div class="pf">
+        <label>Bairro</label>
+        <select id="pf-bh">
+          <option value="">Selecione</option>
+          <option>Higienópolis</option><option>Consolação</option><option>Vila Madalena</option>
+          <option>Pinheiros</option><option>Itaim Bibi</option><option>Liberdade</option>
+          <option>Mooca</option><option>Carrão</option><option>Tatuapé</option>
+          <option>Jardins</option><option>Ibirapuera</option><option>Barra Funda</option>
+          <option>Lapa</option><option>Santana</option><option>Centro</option>
+          <option>Brás</option><option>Vila Prudente</option><option>Perdizes</option>
+        </select>
+      </div>
+      <div class="pf">
+        <label>Categoria</label>
+        <select id="pf-ct">
+          <option value="baladas">Bar / Balada lotado</option>
+          <option value="shows">Show / Música ao vivo</option>
+          <option value="feiras">Feira</option>
+          <option value="gastronomia">Food truck / Gastronomia</option>
+          <option value="esportes">Esporte / Corrida</option>
+          <option value="arte">Arte de rua / Grafite</option>
+          <option value="protestos">Evento cultural</option>
+        </select>
+      </div>
+      <div class="pf">
+        <label>Clima do lugar</label>
+        <div class="emoji-grid" id="eg"></div>
+      </div>
+      <div class="pf">
+        <label>O que está rolando?</label>
+        <textarea id="pf-ds" placeholder="Conta o clima! Fila na porta, música ao vivo, galera demais…" maxlength="120" oninput="countDesc()"></textarea>
+        <div class="char-count" id="desc-ct">0/120</div>
+      </div>
+      <button class="btn" onclick="submitPost()">Publicar ao vivo 🔴</button>
+    </div>
+    <div class="post-ok" id="post-ok">
+      <div class="ok-icon">📍</div>
+      <div class="ok-title">Tá ao vivo!</div>
+      <div class="ok-sub" id="ok-sub">Seu local está no feed agora.<br>A galera já pode ver.</div>
+      <button class="btn" style="max-width:200px;" onclick="afterPost()">Ver no feed</button>
+    </div>
+  </div>
+
+  <!-- PERFIL TAB -->
+  <div id="t-perfil" class="screen" style="flex:1;flex-direction:column;">
+    <div class="prof-scroll">
+      <div class="prof-top">
+        <div class="prof-av-wrap">
+          <div class="prof-av no-img" id="prof-av-big"></div>
+          <div class="prof-av-edit" onclick="openEdit()">
+            <svg viewBox="0 0 12 12"><path d="M8 1L11 4 4 11H1V8L8 1z"/></svg>
+          </div>
+        </div>
+        <div class="prof-name-disp" id="prof-nm-disp">-</div>
+        <div class="prof-bio-disp" id="prof-bio-disp">Sem bio ainda</div>
+        <button class="prof-edit-btn" onclick="openEdit()">Editar perfil</button>
+      </div>
+      <div class="prof-stats-row">
+        <div class="psr"><div class="psr-v" id="ps-p">0</div><div class="psr-l">Postagens</div></div>
+        <div class="psr"><div class="psr-v" id="ps-v">0</div><div class="psr-l">Visualiz.</div></div>
+        <div class="psr"><div class="psr-v" id="ps-b">0</div><div class="psr-l">Bairros</div></div>
+      </div>
+      <div class="prof-sec">
+        <div class="prof-sec-title">Suas postagens ao vivo</div>
+        <div id="my-posts"></div>
+      </div>
+      <div class="prof-actions">
+        <button class="btn-danger" onclick="doLogout()">Sair da conta</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="bn on" id="bn-feed" onclick="goTab('feed')">
+      <span class="bn-icon">🏠</span><span class="bn-lbl">Feed</span>
+    </button>
+    <button class="bn" id="bn-mapa" onclick="goTab('mapa')">
+      <span class="bn-icon">🗺️</span><span class="bn-lbl">Mapa</span>
+    </button>
+    <button class="bn" id="bn-post" onclick="goTab('post')">
+      <span class="bn-icon">🔴</span><span class="bn-lbl">Ao vivo</span>
+    </button>
+    <button class="bn" id="bn-perfil" onclick="goTab('perfil')">
+      <span class="bn-icon">👤</span><span class="bn-lbl">Perfil</span>
+    </button>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-bg hidden" id="edit-modal">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Editar perfil</div>
+    <div class="modal-av-row">
+      <div class="modal-av no-img" id="modal-av" onclick="triggerFilePick()">
+        <div class="modal-av-overlay">trocar</div>
+      </div>
+    </div>
+    <input type="file" id="file-inp" accept="image/*" onchange="handlePhoto(event)"/>
+    <div class="ef">
+      <label>Nome</label>
+      <input type="text" id="ed-nm" maxlength="30" placeholder="Seu nome"/>
+    </div>
+    <div class="ef">
+      <label>Bio <span style="color:var(--text3);font-size:10px;">(máx. 50 letras)</span></label>
+      <textarea id="ed-bio" maxlength="50" placeholder="Uma frase sobre você…" oninput="countBio()"></textarea>
+      <div class="bio-chars" id="bio-ct">0/50</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="btn-save" onclick="saveProfile()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SK={users:'fs_users2',sess:'fs_sess2',posts:'fs_posts2'};
+const CAT_BG={baladas:'#1F0A0A',shows:'#1A0A0A',feiras:'#091A0F',gastronomia:'#1A160A',esportes:'#100A1A',arte:'#0A0F1A',protestos:'#1A140A'};
+const CAT_EM={baladas:'#E8420A',shows:'#E8420A',feiras:'#22C55E',gastronomia:'#22C55E',esportes:'#A855F7',arte:'#3B82F6',protestos:'#F59E0B'};
+const CAT_LB={baladas:'Bar/Balada',shows:'Show',feiras:'Feira',gastronomia:'Comida',esportes:'Esporte',arte:'Arte',protestos:'Evento'};
+const EMOJIS=['🍺','🎸','🎉','🎨','🌮','🏃','📢','🌿','🎶','🎭','🍕','🔥'];
+const SPOTS=[
+  {id:1,n:'Vila Madalena',x:95,y:200,cat:'arte',em:'🎨',ft:18,vw:67},
+  {id:2,n:'Av. Paulista',x:175,y:230,cat:'shows',em:'🎸',ft:31,vw:124},
+  {id:3,n:'Liberdade',x:225,y:280,cat:'gastronomia',em:'🍜',ft:9,vw:38},
+  {id:4,n:'Pinheiros',x:115,y:220,cat:'feiras',em:'🌿',ft:14,vw:52},
+  {id:5,n:'Ibirapuera',x:200,y:340,cat:'esportes',em:'🏃',ft:22,vw:89},
+  {id:6,n:'Barra Funda',x:100,y:165,cat:'baladas',em:'🎉',ft:7,vw:29},
+  {id:7,n:'Carrão/Unicid',x:330,y:215,cat:'shows',em:'🎸',ft:15,vw:63},
+  {id:8,n:'Higienópolis',x:155,y:185,cat:'baladas',em:'🍺',ft:11,vw:47},
+  {id:9,n:'Mooca',x:310,y:255,cat:'gastronomia',em:'🍕',ft:5,vw:21},
+  {id:10,n:'Centro',x:225,y:255,cat:'arte',em:'🎭',ft:16,vw:58},
+];
+const SUGS=[
+  {nm:'Bar perto da Mackenzie',ru:'R. Itambé, 135',bh:'Higienópolis',ct:'baladas',em:'🍺',ds:'Bar clássico da facul, sempre cheio na quarta e sexta'},
+  {nm:'Unicid — entrada principal',ru:'Av. Regente Feijó, 1295',bh:'Carrão',ct:'shows',em:'🎸',ds:'Evento da Unicid lotando, galera chegando agora'},
+  {nm:'Beco do Batman',ru:'R. Gonçalo Afonso, s/n',bh:'Vila Madalena',ct:'arte',em:'🎨',ds:'Painel novo, artista grafitando ao vivo'},
+  {nm:'Feira da Liberdade',ru:'Pça da Liberdade, s/n',bh:'Liberdade',ct:'gastronomia',em:'🍜',ds:'Sábado de feira, lotado de gente'},
+  {nm:'Largo da Batata',ru:'Largo da Batata, s/n',bh:'Pinheiros',ct:'shows',em:'🎶',ds:'Show surpresa rolando no Largo'},
+  {nm:'Av. Paulista — MASP',ru:'Av. Paulista, 1578',bh:'Consolação',ct:'shows',em:'🎸',ds:'Multidão na Paulista, show ao ar livre'},
+];
+const DEMO_POSTS=SUGS.map((s,i)=>({
+  id:'d'+i,userId:'demo',uname:'Usuário SP',ucolor:'#3B82F6',uinit:'U',uphoto:null,
+  nm:s.nm,ru:s.ru,bh:s.bh,ct:s.ct,em:s.em,ds:s.ds,
+  vw:20+Math.floor(Math.random()*100),ft:2+Math.floor(Math.random()*20),
+  time:'há '+(i*8+3)+'min',ts:Date.now()-i*600000
+}));
+
+let users=JSON.parse(localStorage.getItem(SK.users)||'[]');
+let sess=JSON.parse(localStorage.getItem(SK.sess)||'null');
+let posts=JSON.parse(localStorage.getItem(SK.posts)||'null');
+let liveN=247;
+let afilt='todos';
+let selEm='🍺';
+let editPhoto=null;
+
+if(!posts){posts=[...DEMO_POSTS];savePosts();}
+
+function savePosts(){localStorage.setItem(SK.posts,JSON.stringify(posts));}
+function saveUsers(){localStorage.setItem(SK.users,JSON.stringify(users));}
+function saveSess(){localStorage.setItem(SK.sess,JSON.stringify(sess));}
+
+function initials(n){return(n||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+function rColor(){return['#E8420A','#3B82F6','#22C55E','#A855F7','#F59E0B','#EC4899'][Math.floor(Math.random()*6)];}
+function ago(ms){const m=Math.round((Date.now()-ms)/60000);if(m<1)return'agora';if(m<60)return`há ${m}min`;return`há ${Math.floor(m/60)}h`;}
+
+function showErr(m){const e=document.getElementById('a-err');e.textContent=m;e.style.display='block';}
+function hideErr(){const e=document.getElementById('a-err');e.style.display='none';}
+
+function aswitch(t){
+  hideErr();
+  document.getElementById('atab-in').classList.toggle('on',t==='in');
+  document.getElementById('atab-up').classList.toggle('on',t==='up');
+  document.getElementById('f-in').style.display=t==='in'?'block':'none';
+  document.getElementById('f-up').style.display=t==='up'?'block':'none';
+}
+
+function doLogin(){
+  const em=document.getElementById('l-em').value.trim();
+  const pw=document.getElementById('l-pw').value;
+  if(!em||!pw){showErr('Preencha todos os campos.');return;}
+  const u=users.find(u=>u.email===em&&u.pass===pw);
+  if(!u){showErr('E-mail ou senha incorretos.');return;}
+  sess={uid:u.id,uname:u.name,ucolor:u.color,uphoto:u.photo||null,ubio:u.bio||''};
+  saveSess();enterApp();
+}
+
+function doReg(){
+  const nm=document.getElementById('r-nm').value.trim();
+  const em=document.getElementById('r-em').value.trim();
+  const pw=document.getElementById('r-pw').value;
+  if(!nm||!em||!pw){showErr('Preencha todos os campos.');return;}
+  if(pw.length<6){showErr('Senha precisa ter 6+ letras.');return;}
+  if(users.find(u=>u.email===em)){showErr('Este e-mail já existe.');return;}
+  const u={id:'u'+Date.now(),name:nm,email:em,pass:pw,color:rColor(),photo:null,bio:''};
+  users.push(u);saveUsers();
+  sess={uid:u.id,uname:u.name,ucolor:u.color,uphoto:null,ubio:''};
+  saveSess();enterApp();
+}
+
+function doLogout(){
+  sess=null;localStorage.removeItem(SK.sess);
+  document.getElementById('s-auth').classList.add('on');
+  document.getElementById('s-main').classList.remove('on');
+  document.getElementById('l-em').value='';
+  document.getElementById('l-pw').value='';
+  hideErr();
+}
+
+function enterApp(){
+  document.getElementById('s-auth').classList.remove('on');
+  document.getElementById('s-main').classList.add('on');
+  updateHdrAv();buildCats();buildEmojiGrid();buildSugs();renderFeed();renderMap();renderProfile();
+  goTab('feed');
+  setInterval(()=>{
+    liveN+=Math.floor(Math.random()*6)-2;if(liveN<50)liveN=50;
+    const el=document.getElementById('live-ct');if(el)el.textContent=liveN+' ao vivo';
+    posts.forEach(p=>{if(Math.random()<0.25)p.vw+=Math.floor(Math.random()*2);});
+  },5000);
+}
+
+function updateHdrAv(){
+  const btn=document.getElementById('hdr-av');
+  if(sess?.uphoto){
+    btn.innerHTML=`<img src="${sess.uphoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+    btn.className='av-btn';
+  } else {
+    btn.textContent=initials(sess?.uname||'?');
+    btn.className='av-btn no-img';
+    btn.style.background=sess?.ucolor||'#888';
+  }
+}
+
+if(sess){enterApp();}
+
+function goTab(t){
+  ['feed','mapa','post','perfil'].forEach(id=>{
+    document.getElementById('t-'+id).classList.toggle('on',id===t);
+    document.getElementById('bn-'+id).classList.toggle('on',id===t);
+  });
+  if(t==='mapa')renderMap();
+  if(t==='post'){document.getElementById('post-form').style.display='block';document.getElementById('post-ok').classList.remove('on');}
+  if(t==='perfil')renderProfile();
+}
+
+function buildCats(){
+  const cats=['todos','baladas','shows','feiras','gastronomia','esportes','arte','protestos'];
+  const lbs={todos:'Todos',baladas:'Bares',shows:'Shows',feiras:'Feiras',gastronomia:'Comida',esportes:'Esportes',arte:'Arte',protestos:'Eventos'};
+  document.getElementById('cats-bar').innerHTML=cats.map(c=>`<button class="cpill${c===afilt?' on':''}" onclick="setFilt('${c}')">${lbs[c]}</button>`).join('');
+}
+
+function setFilt(f){afilt=f;buildCats();renderFeed();}
+
+function buildEmojiGrid(){
+  document.getElementById('eg').innerHTML=EMOJIS.map((e,i)=>`<div class="eg${i===0?' sel':''}" data-em="${e}" onclick="pickEm(this)">${e}</div>`).join('');
+}
+function pickEm(el){document.querySelectorAll('.eg').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');selEm=el.dataset.em;}
+
+function buildSugs(){
+  document.getElementById('sug-nm').innerHTML=SUGS.slice(0,3).map((s,i)=>`<button class="sg" onclick="fillSug(${i})">${s.nm}</button>`).join('');
+  document.getElementById('sug-ru').innerHTML=['R. Itambé','Av. Paulista','Av. Regente Feijó','R. Augusta','Largo da Batata','R. Fradique Coutinho'].map(r=>`<button class="sg" onclick="document.getElementById('pf-ru').value='${r}, '">${r}</button>`).join('');
+}
+function fillSug(i){
+  const s=SUGS[i];
+  document.getElementById('pf-nm').value=s.nm;
+  document.getElementById('pf-ru').value=s.ru;
+  document.getElementById('pf-bh').value=s.bh;
+  document.getElementById('pf-ct').value=s.ct;
+  document.getElementById('pf-ds').value=s.ds;
+  document.querySelectorAll('.eg').forEach(e=>{e.classList.remove('sel');if(e.dataset.em===s.em)e.classList.add('sel');});
+  selEm=s.em;countDesc();
+}
+function countDesc(){
+  const v=document.getElementById('pf-ds').value.length;
+  const el=document.getElementById('desc-ct');
+  el.textContent=v+'/120';el.className='char-count'+(v>=110?' over':'');
+}
+
+function renderFeed(){
+  const scroll=document.getElementById('feed-scroll');
+  const filtered=afilt==='todos'?posts:posts.filter(p=>p.ct===afilt);
+  const sorted=[...filtered].sort((a,b)=>b.ts-a.ts);
+  if(!sorted.length){scroll.innerHTML=`<div class="empty-feed"><div class="ei">🔍</div><div class="et">Nenhum rolê nessa categoria</div><div class="es">Mude o filtro ou seja o primeiro a postar!</div></div>`;return;}
+  scroll.innerHTML=sorted.map((p,i)=>`
+  <div class="pcard">
+    <div class="pc-head">
+      <div class="pc-av${p.uphoto?'':'  no-img'}" style="${!p.uphoto?'background:'+p.ucolor+';color:white;':''}">
+        ${p.uphoto?`<img src="${p.uphoto}"/>`:`<span>${initials(p.uname)}</span>`}
+      </div>
+      <div class="pc-meta">
+        <div class="pc-uname">${p.uname}${p.isNew?'<span class="new-badge">ao vivo</span>':''}</div>
+        <div class="pc-time">${ago(p.ts)}</div>
+      </div>
+      ${i<3?`<div class="live-tag"><span></span>AO VIVO</div>`:''}
+    </div>
+    <div class="pc-thumb" style="background:${CAT_BG[p.ct]||'#111'};">
+      <span style="font-size:60px;">${p.em}</span>
+      <div class="pc-cat-tag" style="background:${CAT_EM[p.ct]}22;color:${CAT_EM[p.ct]};border:0.5px solid ${CAT_EM[p.ct]}44;">${CAT_LB[p.ct]||p.ct}</div>
+      ${p.vw>50?`<div class="pc-hot">🔥 ${p.vw} vendo</div>`:''}
+    </div>
+    <div class="pc-loc">${p.nm}</div>
+    <div class="pc-addr">📍 ${p.ru} — ${p.bh}</div>
+    <div class="pc-desc">${p.ds}</div>
+    <div class="pc-foot">
+      <span class="pc-stat">👁 ${p.vw} pessoas</span>
+      <span class="pc-stat">📸 ${p.ft} fotos</span>
+    </div>
+  </div>`).join('');
+}
+
+function renderMap(){
+  const svg=document.getElementById('mapsvg');
+  let h=`<rect width="420" height="520" fill="#141414"/>`;
+  const rds=[[50,120,370,120],[50,250,370,250],[50,380,370,380],[100,60,100,480],[200,60,200,480],[300,60,300,480],[130,80,270,420],[270,80,130,420]];
+  rds.forEach(([x1,y1,x2,y2])=>h+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#2E2E2E" stroke-width="1.5"/>`);
+  h+=`<ellipse cx="200" cy="345" rx="44" ry="34" fill="#091A0F" stroke="#22C55E44" stroke-width="1"/>`;
+  h+=`<text x="200" y="348" text-anchor="middle" font-size="9" fill="#22C55E88" font-family="sans-serif">Ibirapuera</text>`;
+  h+=`<text x="210" y="26" text-anchor="middle" font-size="11" fill="#444" font-family="sans-serif" letter-spacing="3">SÃO PAULO</text>`;
+
+  const userPs=posts.filter(p=>p.userId!=='demo');
+  userPs.forEach((p,i)=>{
+    const x=120+((i*83)%200);const y=140+((i*61)%220);
+    h+=`<circle cx="${x}" cy="${y}" r="9" fill="${CAT_EM[p.ct]||'#888'}" opacity="0.85"/>`;
+    h+=`<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="11" style="pointer-events:none">${p.em}</text>`;
+  });
+
+  SPOTS.forEach(s=>{
+    const col=CAT_EM[s.cat]||'#888';
+    const r=9+Math.min(s.ft,16);
+    h+=`<circle cx="${s.x}" cy="${s.y}" r="${r+5}" fill="${col}" opacity="0.07"/>`;
+    h+=`<circle cx="${s.x}" cy="${s.y}" r="${r}" fill="${col}" opacity="0.82" style="cursor:pointer" onmouseenter="mTip(${s.id},${s.x},${s.y})" onmouseleave="mHide()" onclick="clickSpot('${s.cat}')"/>`;
+    h+=`<text x="${s.x}" y="${s.y+1}" text-anchor="middle" dominant-baseline="middle" font-size="13" style="pointer-events:none">${s.em}</text>`;
+    h+=`<text x="${s.x}" y="${s.y+r+10}" text-anchor="middle" font-size="8" fill="#666" font-family="sans-serif" style="pointer-events:none">${s.n}</text>`;
+    h+=`<circle cx="${s.x+r-2}" cy="${s.y-r+2}" r="7" fill="#E8420A"/>`;
+    h+=`<text x="${s.x+r-2}" y="${s.y-r+3}" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="white" font-family="sans-serif" font-weight="bold" style="pointer-events:none">${s.ft}</text>`;
+  });
+  svg.innerHTML=h;
+}
+
+function mTip(id,x,y){
+  const s=SPOTS.find(sp=>sp.id===id);if(!s)return;
+  document.getElementById('tt-n').textContent=s.n;
+  document.getElementById('tt-i').textContent=`${s.ft} fotos · ${s.vw} vendo`;
+  const tip=document.getElementById('m-tip');
+  const svgEl=document.getElementById('mapsvg');
+  const r=svgEl.getBoundingClientRect();
+  tip.style.display='block';
+  tip.style.left=(x*(r.width/420)+12)+'px';
+  tip.style.top=(y*(r.height/520)-20)+'px';
+}
+function mHide(){document.getElementById('m-tip').style.display='none';}
+function clickSpot(cat){afilt=cat;goTab('feed');buildCats();renderFeed();}
+
+function submitPost(){
+  const nm=document.getElementById('pf-nm').value.trim();
+  const ru=document.getElementById('pf-ru').value.trim();
+  const bh=document.getElementById('pf-bh').value;
+  const ct=document.getElementById('pf-ct').value;
+  const ds=document.getElementById('pf-ds').value.trim();
+  if(!nm||!ru||!bh||!ds){alert('Preencha local, endereço, bairro e descrição.');return;}
+  const p={
+    id:'p'+Date.now(),userId:sess.uid,uname:sess.uname,ucolor:sess.ucolor,uphoto:sess.uphoto||null,uinit:initials(sess.uname),
+    nm,ru,bh,ct,em:selEm,ds,vw:Math.floor(Math.random()*10)+2,ft:1,ts:Date.now(),isNew:true
+  };
+  posts.unshift(p);savePosts();
+  document.getElementById('post-form').style.display='none';
+  document.getElementById('post-ok').classList.add('on');
+  document.getElementById('ok-sub').textContent=`"${nm}" está ao vivo!\nA galera já pode ver no feed.`;
+  setTimeout(()=>{p.isNew=false;},5000);
+  ['pf-nm','pf-ru','pf-ds'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pf-bh').value='';
+}
+function afterPost(){goTab('feed');afilt='todos';buildCats();renderFeed();}
+
+function renderProfile(){
+  const myP=posts.filter(p=>p.userId===sess?.uid);
+  const totV=myP.reduce((s,p)=>s+p.vw,0);
+  const bairros=new Set(myP.map(p=>p.bh)).size;
+  document.getElementById('ps-p').textContent=myP.length;
+  document.getElementById('ps-v').textContent=totV;
+  document.getElementById('ps-b').textContent=bairros;
+  document.getElementById('prof-nm-disp').textContent=sess?.uname||'-';
+  document.getElementById('prof-bio-disp').textContent=sess?.ubio||'Sem bio ainda';
+
+  const bigAv=document.getElementById('prof-av-big');
+  if(sess?.uphoto){
+    bigAv.innerHTML=`<img src="${sess.uphoto}" style="width:100%;height:100%;object-fit:cover;"/>`;
+    bigAv.className='prof-av';
+  } else {
+    bigAv.textContent=initials(sess?.uname||'?');
+    bigAv.className='prof-av no-img';
+    bigAv.style.background=sess?.ucolor||'#888';
+    bigAv.style.color='white';
+    bigAv.style.display='flex';
+    bigAv.style.alignItems='center';
+    bigAv.style.justifyContent='center';
+    bigAv.style.fontSize='30px';
+    bigAv.style.fontWeight='700';
+  }
+
+  const mp=document.getElementById('my-posts');
+  if(!myP.length){mp.innerHTML=`<div class="no-posts-msg">Você ainda não postou nenhum rolê ao vivo.</div>`;return;}
+  mp.innerHTML=myP.sort((a,b)=>b.ts-a.ts).map(p=>`
+  <div class="mini-card">
+    <div class="mini-em" style="background:${CAT_BG[p.ct]}">${p.em}</div>
+    <div class="mini-info">
+      <div class="mini-loc">${p.nm}</div>
+      <div class="mini-addr">📍 ${p.ru}</div>
+    </div>
+    <div class="mini-views">👁 ${p.vw}</div>
+  </div>`).join('');
+}
+
+function openEdit(){
+  const u=users.find(u=>u.id===sess?.uid);
+  document.getElementById('ed-nm').value=sess?.uname||'';
+  document.getElementById('ed-bio').value=sess?.ubio||'';
+  editPhoto=sess?.uphoto||null;
+  const mav=document.getElementById('modal-av');
+  if(editPhoto){
+    mav.innerHTML=`<img src="${editPhoto}" style="width:100%;height:100%;object-fit:cover;"/><div class="modal-av-overlay">trocar</div>`;
+    mav.className='modal-av';
+  } else {
+    mav.innerHTML=`<span style="font-size:24px;font-weight:700;color:var(--text2);">${initials(sess?.uname||'?')}</span><div class="modal-av-overlay">trocar</div>`;
+    mav.className='modal-av no-img';
+  }
+  countBio();
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+function closeEdit(){document.getElementById('edit-modal').classList.add('hidden');}
+function triggerFilePick(){document.getElementById('file-inp').click();}
+
+function handlePhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    editPhoto=e.target.result;
+    const mav=document.getElementById('modal-av');
+    mav.innerHTML=`<img src="${editPhoto}" style="width:100%;height:100%;object-fit:cover;"/><div class="modal-av-overlay">trocar</div>`;
+    mav.className='modal-av';
+  };
+  reader.readAsDataURL(file);
+}
+
+function countBio(){
+  const v=document.getElementById('ed-bio').value.length;
+  const el=document.getElementById('bio-ct');
+  el.textContent=v+'/50';el.className='bio-chars'+(v>=45?' over':'');
+}
+
+function saveProfile(){
+  const nm=document.getElementById('ed-nm').value.trim();
+  const bio=document.getElementById('ed-bio').value.slice(0,50);
+  if(!nm){alert('Coloque um nome.');return;}
+  const u=users.find(u=>u.id===sess?.uid);
+  if(u){u.name=nm;u.photo=editPhoto;u.bio=bio;saveUsers();}
+  sess={...sess,uname:nm,uphoto:editPhoto,ubio:bio};
+  saveSess();
+  posts.filter(p=>p.userId===sess.uid).forEach(p=>{p.uname=nm;p.uphoto=editPhoto;});
+  savePosts();
+  closeEdit();updateHdrAv();renderProfile();renderFeed();
+}
+</script>
+</html>
